@@ -1,0 +1,4 @@
+event_type,event_count,percentage_of_total
+SERVICE_COMPLETION,500,33.33
+SERVICE_START,500,33.33
+ARRIVAL,500,33.33

@@ -1,0 +1,5 @@
+queue_id,total_arrivals,predicted_long_waits,actual_long_waits,predicted_long_wait_risk_pct,actual_long_wait_pct,risk_category
+Q_FINANCIAL_AID,129,102,102,79.07,79.07,CRITICAL_RISK
+Q_ADMISSIONS,154,119,120,77.27,77.92,CRITICAL_RISK
+Q_ACADEMIC_RECORDS,125,68,66,54.4,52.8,HIGH_RISK
+Q_ID_GENERAL,92,0,0,0.0,0.0,LOW_RISK

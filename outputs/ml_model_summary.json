@@ -1,0 +1,61 @@
+{
+  "champion_model": "LogisticRegression",
+  "features": [
+    "queue_id (OneHotEncoded)",
+    "priority_level (OneHotEncoded)",
+    "arrival_hour",
+    "arrival_minute_of_day",
+    "is_rush_hour",
+    "queue_arrivals_prior_30m",
+    "total_arrivals_prior_30m"
+  ],
+  "target": "long_wait (wait_time_seconds > 1800s)",
+  "data_source": "SYNTHETIC_SIMULATION (Seed 42)",
+  "total_customers": 500,
+  "train_customers": 426,
+  "test_customers": 74,
+  "evaluation": {
+    "model_name": "LogisticRegression",
+    "accuracy_pct": 98.65,
+    "f1_score": 0.9865,
+    "precision": 0.9869,
+    "recall": 0.9865,
+    "auc_roc": 1.0,
+    "auc_pr": 1.0,
+    "tp": 44,
+    "fp": 0,
+    "tn": 29,
+    "fn": 1,
+    "test_sample_count": 74
+  },
+  "comparison": [
+    {
+      "model_name": "LogisticRegression",
+      "accuracy_pct": 98.65,
+      "f1_score": 0.9865,
+      "precision": 0.9869,
+      "recall": 0.9865,
+      "auc_roc": 1.0,
+      "auc_pr": 1.0,
+      "tp": 44,
+      "fp": 0,
+      "tn": 29,
+      "fn": 1,
+      "test_sample_count": 74
+    },
+    {
+      "model_name": "RandomForestClassifier",
+      "accuracy_pct": 97.3,
+      "f1_score": 0.973,
+      "precision": 0.973,
+      "recall": 0.973,
+      "auc_roc": 0.9985,
+      "auc_pr": 0.999,
+      "tp": 44,
+      "fp": 1,
+      "tn": 28,
+      "fn": 1,
+      "test_sample_count": 74
+    }
+  ]
+}

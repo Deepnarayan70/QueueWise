@@ -1,0 +1,5 @@
+queue_id,service_type,active_counters,assigned_counters,total_customers_served,demand_share_pct,avg_wait_minutes,max_wait_minutes,avg_service_minutes,avg_counter_utilization_pct,sla_breach_15m_pct,sla_breach_30m_pct,sla_breach_60m_pct,capacity_status
+Q_FINANCIAL_AID,Scholarships & Fee Payments,2,"COUNTER_04, COUNTER_03",129,25.80,152.48,340.58,9.39,97.44,86.05,79.07,71.32,CRITICAL_BOTTLENECK
+Q_ADMISSIONS,Admissions & Enrollment Verification,2,"COUNTER_01, COUNTER_02",154,30.80,113.33,254.23,6.74,83.47,83.77,77.92,68.83,HIGH_UTILIZATION
+Q_ACADEMIC_RECORDS,Transcripts & Grade Records,2,"COUNTER_06, COUNTER_05",125,25.00,44.96,126.28,6.27,63.05,75.20,52.80,32.80,BALANCED
+Q_ID_GENERAL,Campus ID Card & General Help,2,"COUNTER_07, COUNTER_08",92,18.40,1.66,9.58,4.1,30.3,0.00,0.00,0.00,UNDERUTILIZED

@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Hadoop / Spark checksum files
+*.crc
+.*.crc
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE and editor settings
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backups and generated report bundles
+backups/
+report/
+
+# Spark Structured Streaming state checkpoints & transient input CSVs
+streaming/checkpoints/
+streaming/input_stream/*.csv

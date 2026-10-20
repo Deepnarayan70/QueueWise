@@ -1,0 +1,14 @@
+# ==============================================================================
+# QueueWise: Real-Time Queue Analytics and Capacity Planning Using Apache Spark
+# Course Project: INT315 Cluster Computing
+# ==============================================================================
+
+# Stage 1: Synthetic Queue Event Generation & Local Dataset Validation
+# (Standard Python libraries: csv, datetime, random, argparse, os, sys)
+pandas>=2.0.0
+
+# Future Stages: Real-Time Stream Processing, Analytics & Visualization
+# (Pre-installed in current environment)
+pyspark>=3.5.0
+streamlit>=1.30.0
+plotly>=5.18.0

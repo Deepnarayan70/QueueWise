@@ -1,0 +1,5 @@
+queue_id,service_type,counter_allocation_change,base_avg_wait_minutes,sim_avg_wait_minutes,wait_time_change_minutes,wait_time_change_pct,base_max_wait_minutes,sim_max_wait_minutes,base_breach_30m_pct,sim_breach_30m_pct,base_breach_60m_pct,sim_breach_60m_pct
+Q_FINANCIAL_AID,Scholarships & Fee Payments,2 -> 3 Counters (+COUNTER_07),152.48,65.03,-87.45,-57.4,340.58,156.3,79.07,68.22,71.32,51.94
+Q_ADMISSIONS,Admissions & Enrollment Verification,2 Counters (Unchanged),113.33,113.33,0.0,0.0,254.23,254.23,77.92,77.92,68.83,68.83
+Q_ACADEMIC_RECORDS,Transcripts & Grade Records,2 Counters (Unchanged),44.96,44.96,0.0,0.0,126.28,126.28,52.80,52.80,32.80,32.80
+Q_ID_GENERAL,Campus ID Card & General Help,2 -> 1 Counter (-COUNTER_07),1.66,50.97,49.31,2970.5,9.58,122.62,0.00,61.96,0.00,43.48

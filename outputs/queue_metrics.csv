@@ -1,0 +1,5 @@
+queue_id,service_type,serviced_customers,avg_wait_minutes,median_wait_minutes,max_wait_minutes,avg_service_minutes,max_service_minutes,avg_total_turnaround_minutes
+Q_FINANCIAL_AID,Scholarships & Fee Payments,129,152.48,153.85,340.58,9.39,16.27,161.87
+Q_ADMISSIONS,Admissions & Enrollment Verification,154,113.33,102.08,254.23,6.74,14.08,120.07
+Q_ACADEMIC_RECORDS,Transcripts & Grade Records,125,44.96,34.05,126.28,6.27,13.37,51.23
+Q_ID_GENERAL,Campus ID Card & General Help,92,1.66,1.03,9.58,4.1,7.02,5.76
