@@ -46,6 +46,8 @@ from pyspark.sql.types import (
 
 def get_spark_session(app_name: str = "QueueWise-Stage3-CapacityPlanning") -> SparkSession:
     """Initializes and returns an optimized local SparkSession configured for Windows."""
+    # Note on Architecture: master("local[*]") runs single-node local standalone mode
+    # utilizing all logical cores on the host (16 threads). Shuffle partitions set to 4.
     spark = (
         SparkSession.builder.appName(app_name)
         .master("local[*]")

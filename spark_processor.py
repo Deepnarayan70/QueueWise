@@ -43,6 +43,9 @@ def get_spark_session(app_name: str = "QueueWise-Stage2-Analytics") -> SparkSess
     Initializes and returns an optimized local SparkSession configured for Windows.
     Enforces IPv4 stack and localhost binding to prevent socket timeouts.
     """
+    # Note on Architecture: master("local[*]") initializes a local standalone Spark instance
+    # utilizing all logical CPU cores on the host workstation (os.cpu_count() = 16 threads).
+    # spark.sql.shuffle.partitions is set to 4 to avoid excessive shuffle partitioning on local datasets.
     spark = (
         SparkSession.builder.appName(app_name)
         .master("local[*]")

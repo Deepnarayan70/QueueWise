@@ -739,52 +739,25 @@ def main() -> None:
                 unsafe_allow_html=True,
             )
 
-            col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-            risk_map = dict(zip(df_ml_risk["queue_id"], df_ml_risk["predicted_long_wait_risk_pct"]))
-            with col_m1:
-                st.markdown(
-                    f"""
-                    <div class="kpi-card" style="border-left: 4px solid #DC2626;">
-                        <div class="kpi-title">Financial Aid Risk</div>
-                        <div class="kpi-number" style="color: #DC2626;">{risk_map.get('Q_FINANCIAL_AID', 0.0):.1f}%</div>
-                        <div class="kpi-detail">Predicted Long-Wait Probability</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-            with col_m2:
-                st.markdown(
-                    f"""
-                    <div class="kpi-card" style="border-left: 4px solid #DC2626;">
-                        <div class="kpi-title">Admissions Risk</div>
-                        <div class="kpi-number" style="color: #DC2626;">{risk_map.get('Q_ADMISSIONS', 0.0):.1f}%</div>
-                        <div class="kpi-detail">Predicted Long-Wait Probability</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-            with col_m3:
-                st.markdown(
-                    f"""
-                    <div class="kpi-card" style="border-left: 4px solid #D97706;">
-                        <div class="kpi-title">Academic Records Risk</div>
-                        <div class="kpi-number" style="color: #D97706;">{risk_map.get('Q_ACADEMIC_RECORDS', 0.0):.1f}%</div>
-                        <div class="kpi-detail">Predicted Long-Wait Probability</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-            with col_m4:
-                st.markdown(
-                    f"""
-                    <div class="kpi-card" style="border-left: 4px solid #16A34A;">
-                        <div class="kpi-title">Campus ID Risk</div>
-                        <div class="kpi-number" style="color: #16A34A;">{risk_map.get('Q_ID_GENERAL', 0.0):.1f}%</div>
-                        <div class="kpi-detail">Predicted Long-Wait Probability</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+            filtered_risk = df_ml_risk[df_ml_risk["queue_id"].isin(selected_queues)]
+            if not filtered_risk.empty:
+                risk_cols = st.columns(len(filtered_risk))
+                for idx, (_, r_row) in enumerate(filtered_risk.iterrows()):
+                    qid = r_row["queue_id"]
+                    risk_pct = r_row["predicted_long_wait_risk_pct"]
+                    color = QUEUE_COLORS.get(qid, "#0284C7")
+                    qname = QUEUE_NAMES.get(qid, qid).split("&")[0].strip()
+                    with risk_cols[idx]:
+                        st.markdown(
+                            f"""
+                            <div class="kpi-card" style="border-left: 4px solid {color};">
+                                <div class="kpi-title">{qname} Long-Wait Risk</div>
+                                <div class="kpi-number" style="color: {color};">{risk_pct:.1f}%</div>
+                                <div class="kpi-detail">Predicted &gt;30m Breach Probability</div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
 
             if df_ml_metrics is not None and not df_ml_metrics.empty:
                 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
@@ -884,7 +857,7 @@ def main() -> None:
         with col_u_info:
             st.markdown(
                 """
-                <div class="content-box" style="height: 320px;">
+                <div class="content-box" style="min-height: 320px;">
                     <div class="content-header">Workload Distribution Analysis</div>
                     <div style="font-size: 0.83rem; color: #334155; line-height: 1.45;">
                         <p><strong>Severe Imbalance Across Department Counters:</strong></p>
@@ -1215,7 +1188,9 @@ def main() -> None:
                 """
                 **Local Processing Environment:**
                 - **Processing Engine:** Apache Spark (PySpark 3.5.9)
-                - **Execution Mode:** Local master (`local[*]`), 4 partitions
+                - **Execution Mode:** Local standalone (`local[*]`, 16 logical CPU threads)
+                - **Shuffle Partitions:** 4 (`spark.sql.shuffle.partitions = 4`)
+                - **Cluster Topology:** Single-node local execution (Windows workstation, not a distributed multi-node cluster)
                 - **Runtime Environment:** Python 3.10.0 | Windows 10
                 - **Java Runtime:** OpenJDK 8 (Adoptium Temurin 1.8.0_482)
                 - **Hadoop Winutils:** `C:\\hadoop\\bin\\winutils.exe`
