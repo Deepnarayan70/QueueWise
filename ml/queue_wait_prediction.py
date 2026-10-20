@@ -164,7 +164,6 @@ def extract_customer_arrival_dataset(spark: SparkSession, csv_path: str):
             "queue_id",
             "priority_level",
             "arrival_hour",
-            "arrival_minute_of_day",
             "is_rush_hour",
             "queue_arrivals_prior_30m",
             "total_arrivals_prior_30m",
@@ -219,7 +218,6 @@ def build_and_train_mllib_pipeline(df_data):
             "queue_vec",
             "priority_vec",
             "arrival_hour",
-            "arrival_minute_of_day",
             "is_rush_hour",
             "queue_arrivals_prior_30m",
             "total_arrivals_prior_30m",
@@ -381,7 +379,6 @@ def build_and_train_mllib_pipeline(df_data):
                 "queue_id (OneHotEncoded)",
                 "priority_level (OneHotEncoded)",
                 "arrival_hour",
-                "arrival_minute_of_day",
                 "is_rush_hour",
                 "queue_arrivals_prior_30m",
                 "total_arrivals_prior_30m"

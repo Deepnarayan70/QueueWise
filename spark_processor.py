@@ -141,11 +141,23 @@ def demonstrate_rdd_analytics(df) -> Dict[str, object]:
     for qid, cnt in sorted(customers_per_queue.items()):
         print(f"   - {qid:<20}: {cnt:>5} customers")
 
+    # 5. Transformation: mapPartitions() -> Physical Partition Distribution
+    # Explanation: Demonstrates worker partition boundary processing. Evaluates record
+    # count per partition without moving data across network or shuffle partitions.
+    num_partitions = events_rdd.getNumPartitions()
+    partition_counts_rdd = events_rdd.mapPartitions(lambda it: [sum(1 for _ in it)])
+    partition_distribution = partition_counts_rdd.collect()
+    print(f"\n5. RDD Transformation: mapPartitions() -> Distribution across {num_partitions} Partitions:")
+    for p_idx, count_in_p in enumerate(partition_distribution):
+        print(f"   - Worker Partition {p_idx}: {count_in_p} records")
+
     return {
         "total_events": total_events,
         "distinct_customers": distinct_customers,
         "event_type_counts": event_type_counts,
         "customers_per_queue": customers_per_queue,
+        "num_partitions": num_partitions,
+        "partition_distribution": partition_distribution,
     }
 
 
@@ -248,6 +260,9 @@ def demonstrate_dataframe_and_sql(spark: SparkSession, df) -> Dict[str, object]:
         """
     )
     df_queue_metrics.show(truncate=False)
+
+    print("\n--- Spark SQL Catalyst Physical Execution Plan (explain()) ---")
+    df_queue_metrics.explain(extended=False)
 
     # --------------------------------------------------------------------------
     # Query 4: Hourly Arrival Volume (Demand Profiling)

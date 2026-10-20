@@ -4,7 +4,6 @@
     "queue_id (OneHotEncoded)",
     "priority_level (OneHotEncoded)",
     "arrival_hour",
-    "arrival_minute_of_day",
     "is_rush_hour",
     "queue_arrivals_prior_30m",
     "total_arrivals_prior_30m"
