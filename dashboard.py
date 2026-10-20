@@ -19,6 +19,15 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from data_loader import (
+    QUEUE_COLORS,
+    QUEUE_NAMES,
+    compute_custom_threshold_metrics,
+    compute_executive_kpis,
+    load_analytical_datasets,
+    load_raw_queue_events,
+)
+
 # ==============================================================================
 # Page Configuration & Global Theme Settings
 # ==============================================================================
@@ -141,6 +150,21 @@ st.markdown(
     .pill-green { background-color: #DCFCE7; color: #166534; }
     .pill-blue { background-color: #E0F2FE; color: #075985; }
 
+    /* Provenance Badge for Analytical Transparency */
+    .provenance-badge {
+        display: inline-block;
+        background-color: #F1F5F9;
+        border: 1px solid #CBD5E1;
+        border-radius: 4px;
+        padding: 3px 8px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #475569;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        vertical-align: middle;
+    }
+
     /* Footer Note */
     .footer-disclaimer {
         font-size: 0.78rem;
@@ -155,19 +179,15 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Queue Visual Encodings
-QUEUE_COLORS = {
-    "Q_FINANCIAL_AID": "#DC2626",      # Red (Critical Bottleneck)
-    "Q_ADMISSIONS": "#2563EB",         # Royal Blue (High Volume)
-    "Q_ACADEMIC_RECORDS": "#D97706",    # Amber (Moderate / Balanced)
-    "Q_ID_GENERAL": "#059669",         # Green (Low Wait / Excess Capacity)
-}
+OUTPUTS_DIR = "outputs"
+DATA_DIR = "data"
 
-QUEUE_NAMES = {
-    "Q_FINANCIAL_AID": "Financial Aid & Scholarships",
-    "Q_ADMISSIONS": "Admissions & Enrollment",
-    "Q_ACADEMIC_RECORDS": "Academic Records & Transcripts",
-    "Q_ID_GENERAL": "Campus ID & General Help",
+PROVENANCE_BADGES = {
+    "Overview": "Observed Simulation Data (Stage 2)",
+    "Queue Performance": "Observed Simulation Data & ML Predictions (Stages 2 & 4)",
+    "Counter Utilization": "Physical Counter Workload (Stage 2)",
+    "Capacity Planning": "Discrete FIFO Re-simulation (Stage 3)",
+    "Data Explorer": "Pre-computed Spark Analytical Datasets",
 }
 
 
@@ -203,60 +223,6 @@ def apply_clean_layout(
 
     fig.update_layout(**layout_update)
     return fig
-
-
-# ==============================================================================
-# Data Ingestion & Caching
-# ==============================================================================
-
-OUTPUTS_DIR = "outputs"
-DATA_DIR = "data"
-
-
-@st.cache_data
-def load_analytical_datasets() -> Tuple[Dict[str, Optional[pd.DataFrame]], Dict[str, str]]:
-    """Loads pre-computed analytical datasets from outputs/."""
-    files = {
-        "event_counts": os.path.join(OUTPUTS_DIR, "event_counts.csv"),
-        "customer_counts": os.path.join(OUTPUTS_DIR, "customer_counts_by_queue.csv"),
-        "queue_metrics": os.path.join(OUTPUTS_DIR, "queue_metrics.csv"),
-        "hourly_arrivals": os.path.join(OUTPUTS_DIR, "hourly_arrivals.csv"),
-        "counter_utilization": os.path.join(OUTPUTS_DIR, "counter_utilization.csv"),
-        "sla_breaches": os.path.join(OUTPUTS_DIR, "sla_breaches_by_queue.csv"),
-        "capacity_comparison": os.path.join(OUTPUTS_DIR, "capacity_comparison.csv"),
-        "reallocation_metrics": os.path.join(OUTPUTS_DIR, "reallocation_simulation_metrics.csv"),
-        "reallocated_counters": os.path.join(OUTPUTS_DIR, "reallocated_counter_utilization.csv"),
-        "ml_risk": os.path.join(OUTPUTS_DIR, "queue_long_wait_risk.csv"),
-        "ml_metrics": os.path.join(OUTPUTS_DIR, "ml_model_metrics.csv"),
-    }
-
-    dfs: Dict[str, Optional[pd.DataFrame]] = {}
-    missing_files: Dict[str, str] = {}
-
-    for key, path in files.items():
-        if os.path.exists(path):
-            try:
-                dfs[key] = pd.read_csv(path)
-            except Exception as e:
-                dfs[key] = None
-                missing_files[key] = f"Error reading {path}: {e}"
-        else:
-            dfs[key] = None
-            missing_files[key] = path
-
-    return dfs, missing_files
-
-
-@st.cache_data
-def load_raw_queue_events() -> Optional[pd.DataFrame]:
-    """Loads raw queue events log for exact custom threshold evaluation."""
-    path = os.path.join(DATA_DIR, "queue_events.csv")
-    if os.path.exists(path):
-        try:
-            return pd.read_csv(path)
-        except Exception:
-            return None
-    return None
 
 
 # ==============================================================================
@@ -345,12 +311,16 @@ def main() -> None:
     )
 
     # Top Brand Header Bar
+    prov_badge = PROVENANCE_BADGES.get(selected_nav, "Analytical Stage")
     st.markdown(
         f"""
         <div class="app-brand-container">
             <div>
-                <h1 class="app-brand-title">QueueWise &mdash; {selected_nav}</h1>
-                <p class="app-brand-subtitle">Multi-Counter Queue Analytics & Decision Support System</p>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 2px;">
+                    <h1 class="app-brand-title">QueueWise &mdash; {selected_nav}</h1>
+                    <span class="provenance-badge">{prov_badge}</span>
+                </div>
+                <p class="app-brand-subtitle">Multi-Counter Queue Analytics &amp; Decision Support System</p>
             </div>
             <div>
                 <span class="status-badge">
@@ -366,22 +336,15 @@ def main() -> None:
     # PAGE 1: OVERVIEW (EXECUTIVE SUMMARY)
     # ==========================================================================
     if selected_nav == "Overview":
-        total_customers = int(df_queue["serviced_customers"].sum())
-        weighted_avg_wait = (
-            round(
-                (df_queue["avg_wait_minutes"] * df_queue["serviced_customers"]).sum() / total_customers,
-                1,
-            )
-            if total_customers > 0
-            else 0.0
-        )
-        tot_served = int(df_sla["total_customers_served"].sum()) if not df_sla.empty else 0
-        tot_breached_30m = int(df_sla["breach_count_30m"].sum()) if not df_sla.empty else 0
-        breach_rate_30m = round((tot_breached_30m / tot_served * 100.0), 1) if tot_served > 0 else 0.0
-
-        bottleneck_row = df_queue.loc[df_queue["avg_wait_minutes"].idxmax()] if not df_queue.empty else None
-        bottleneck_id = bottleneck_row["queue_id"] if bottleneck_row is not None else "N/A"
-        bottleneck_wait = bottleneck_row["avg_wait_minutes"] if bottleneck_row is not None else 0.0
+        kpis = compute_executive_kpis(df_queue, df_sla)
+        total_customers = kpis["total_customers"]
+        weighted_avg_wait = kpis["weighted_avg_wait"]
+        breach_rate_30m = kpis["breach_rate_30m"]
+        tot_breached_30m = kpis["tot_breached_30m"]
+        tot_served = kpis["tot_served"]
+        bottleneck_id = kpis["bottleneck_id"]
+        bottleneck_name = kpis["bottleneck_name"]
+        bottleneck_wait = kpis["bottleneck_wait"]
 
         # KPI Metrics Row
         k1, k2, k3, k4 = st.columns(4)
@@ -423,7 +386,7 @@ def main() -> None:
                 f"""
                 <div class="kpi-card">
                     <div class="kpi-title">Current Bottleneck</div>
-                    <div class="kpi-number" style="font-size: 1.35rem;">{QUEUE_NAMES.get(bottleneck_id, bottleneck_id)}</div>
+                    <div class="kpi-number" style="font-size: 1.35rem;">{bottleneck_name}</div>
                     <div class="kpi-detail kpi-alert-text">Avg wait: {bottleneck_wait}m | 97.4% load</div>
                 </div>
                 """,
@@ -574,26 +537,21 @@ def main() -> None:
                 help="Evaluate the percentage of students whose wait exceeded this duration.",
             )
 
+        # Dynamic Threshold Evaluation via centralized data_loader
+        cust_total, cust_breached, custom_breach_rate, custom_info = compute_custom_threshold_metrics(
+            raw_df, df_sla, selected_queues, user_threshold_minutes
+        )
+        st.info(f"📊 **Threshold Analysis:** {custom_info}")
+
         # Filtered DataFrame
         f_queue = df_queue[df_queue["queue_id"].isin(selected_queues)].copy()
         f_sla = df_sla[df_sla["queue_id"].isin(selected_queues)].copy()
 
-        # Dynamic Threshold Evaluation
-        if raw_df is not None and not raw_df.empty:
-            starts_filtered = raw_df[
-                (raw_df["event_type"] == "SERVICE_START") & (raw_df["queue_id"].isin(selected_queues))
-            ]
-            cust_total = len(starts_filtered)
-            cust_breached = (starts_filtered["wait_time_seconds"] > (user_threshold_minutes * 60)).sum()
-            custom_breach_rate = round((cust_breached / cust_total * 100.0), 1) if cust_total > 0 else 0.0
-            custom_info = f"**{cust_breached} of {cust_total} students ({custom_breach_rate}%)** waited strictly longer than **{user_threshold_minutes} minutes** across selected queues."
-        else:
-            cust_total = f_sla["total_customers_served"].sum() if not f_sla.empty else 0
-            cust_breached = f_sla["breach_count_30m"].sum() if not f_sla.empty else 0
-            custom_breach_rate = round((cust_breached / cust_total * 100.0), 1) if cust_total > 0 else 0.0
-            custom_info = f"Showing 30-minute standard benchmark: **{custom_breach_rate}%** of customers breached."
-
-        st.info(f"📊 **Threshold Analysis:** {custom_info}")
+        if f_queue.empty:
+            st.info("No service queues match the selected filter. Displaying all queues by default.")
+            f_queue = df_queue.copy()
+            f_sla = df_sla.copy()
+            selected_queues = queue_options
 
         col_q1, col_q2 = st.columns([3, 2])
 
@@ -782,7 +740,7 @@ def main() -> None:
                 st.markdown(
                     """
                     <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 10px 14px; font-size: 0.81rem; color: #475569; margin-top: 8px;">
-                        <strong>Audit Note & Synthetic Data Disclosure:</strong> The high AUC (~0.999&ndash;1.000) reflects the clean separability produced by deterministic M/M/c queuing dynamics across 500 customers in a single simulated day. In real university operations with non-stationary human walk-ins and varying case complexities, empirical AUC typically ranges from 0.75 to 0.85.
+                        <strong>Audit Note & Synthetic Data Disclosure:</strong> The high AUC (~0.999&ndash;1.000) is an expected mathematical property of the synthetic discrete-event M/M/c queuing mechanics (Poisson arrivals, exponential service durations, and fixed FIFO counter queues) across 500 customers in a single simulated day. In this dataset, <code>Q_ID_GENERAL</code> has 0 breaches while <code>Q_FINANCIAL_AID</code> remains persistently saturated after 10:42 AM, creating clean decision boundaries. In contrast, real-world physical university help desks experience unmeasured human walk-in variance, non-stationary service complexity, and variable staff processing rates.
                     </div>
                     """,
                     unsafe_allow_html=True,
