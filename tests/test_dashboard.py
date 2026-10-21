@@ -1,6 +1,6 @@
 """
-Streamlit AppTest suite for QueueWise Operations Console (dashboard.py).
-INT315 Cluster Computing Capstone Project.
+Streamlit AppTest suite for QueueWise Operations Platform (dashboard.py).
+Automated functional verification of page navigation, layout, and filtering.
 """
 
 import os

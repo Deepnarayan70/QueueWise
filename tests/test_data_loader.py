@@ -1,6 +1,6 @@
 """
 Unit tests for data_loader.py module in QueueWise.
-INT315 Cluster Computing Capstone Project.
+Automated functional verification of data ingestion, caching, and KPI calculations.
 """
 
 import os

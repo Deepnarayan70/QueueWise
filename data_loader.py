@@ -1,6 +1,5 @@
 """
 QueueWise -- Data Loader and Analytical Business Logic Service
-INT315 Cluster Computing Capstone Project
 
 Provides robust data ingestion, timestamp-aware caching, schema validation,
 and reusable queuing KPI calculations. Separates data-loading and business logic
@@ -130,7 +129,7 @@ def load_raw_queue_events(data_path: str = os.path.join("data", "queue_events.cs
 
 def compute_executive_kpis(df_queue: pd.DataFrame, df_sla: pd.DataFrame) -> Dict[str, Any]:
     """
-    Computes top-level facility metrics from validated Stage 2 & 3 DataFrames.
+    Computes top-level facility metrics from validated analytical DataFrames.
     Avoids recalculating or duplicating formulas inside presentation templates.
     """
     if df_queue is None or df_queue.empty:
@@ -192,7 +191,7 @@ def compute_custom_threshold_metrics(
         total = len(starts)
         breached = int((starts["wait_time_seconds"] > (threshold_minutes * 60)).sum())
         rate = round((breached / total * 100.0), 1) if total > 0 else 0.0
-        info_text = f"{breached} of {total} students ({rate}%) waited strictly longer than {threshold_minutes} minutes."
+        info_text = f"{breached} of {total} customers ({rate}%) waited strictly longer than {threshold_minutes} minutes."
         return total, breached, rate, info_text
 
     # Fallback to pre-computed SLA output
@@ -201,7 +200,7 @@ def compute_custom_threshold_metrics(
         total = int(f_sla["total_customers_served"].sum()) if not f_sla.empty else 0
         breached = int(f_sla["breach_count_30m"].sum()) if not f_sla.empty else 0
         rate = round((breached / total * 100.0), 1) if total > 0 else 0.0
-        info_text = f"Showing 30-minute benchmark: {breached} of {total} students ({rate}%) exceeded 30 minutes."
+        info_text = f"Showing 30-minute benchmark: {breached} of {total} customers ({rate}%) exceeded 30 minutes."
         return total, breached, rate, info_text
 
     return 0, 0, 0.0, "No SLA breach data available."

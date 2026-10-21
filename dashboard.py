@@ -1,14 +1,9 @@
 """
-QueueWise -- Real-Time Queue Analytics and Capacity Planning Using Apache Spark
-INT315 Cluster Computing Capstone Project
+QueueWise -- Operations Intelligence Platform
+Queue Analytics & Capacity Optimization
 
-Operations Console Dashboard
-Built with Streamlit 1.65.0, Plotly 7.1.0, and pandas 2.3.3.
-Consumes pre-computed Spark Core, Spark SQL, Spark MLlib, and Capacity Simulation outputs.
-
-Academic Notice:
-    All analytics reflect synthetic discrete-event queue simulations (seed 42).
-    Results do not represent actual university administrative records.
+Interactive operations dashboard for queue monitoring, wait-time prediction,
+and capacity scenario planning.
 """
 
 import os
@@ -33,7 +28,7 @@ from data_loader import (
 # ==============================================================================
 
 st.set_page_config(
-    page_title="QueueWise | Queue Operations & Capacity Planning Console",
+    page_title="QueueWise | Operations Intelligence Platform",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -183,11 +178,19 @@ OUTPUTS_DIR = "outputs"
 DATA_DIR = "data"
 
 PROVENANCE_BADGES = {
-    "Overview": "Observed Simulation Data (Stage 2)",
-    "Queue Performance": "Observed Simulation Data & ML Predictions (Stages 2 & 4)",
-    "Counter Utilization": "Physical Counter Workload (Stage 2)",
-    "Capacity Planning": "Discrete FIFO Re-simulation (Stage 3)",
-    "Data Explorer": "Pre-computed Spark Analytical Datasets",
+    "Overview": "Operational Simulation Baseline",
+    "Queue Performance": "Observed Analytics & ML Predictions",
+    "Counter Utilization": "Physical Counter Workload",
+    "Capacity Planning": "Resource Allocation Scenario Analysis",
+    "Data Explorer": "Analytical Datasets & Exports",
+}
+
+PAGE_SUBTITLES = {
+    "Overview": "Monitor service performance, customer waiting times, and operational bottlenecks.",
+    "Queue Performance": "Understand waiting-time patterns and identify queues at risk of delays.",
+    "Counter Utilization": "Compare counter workload and identify opportunities to balance capacity.",
+    "Capacity Planning": "Evaluate resource allocation scenarios and their operational trade-offs.",
+    "Data Explorer": "Inspect analytical datasets and export results for further analysis.",
 }
 
 
@@ -246,9 +249,9 @@ def main() -> None:
             """
             Please execute the pipeline scripts to generate required outputs:
             ```powershell
-            python spark_processor.py      # Generates Stage 2 outputs
-            python capacity_planner.py     # Generates Stage 3 outputs
-            python ml/queue_wait_prediction.py  # Generates Stage 4 outputs
+            python spark_processor.py           # Generates baseline analytics
+            python capacity_planner.py          # Generates capacity simulation
+            python ml/queue_wait_prediction.py  # Generates predictive risk models
             ```
             """
         )
@@ -273,8 +276,8 @@ def main() -> None:
         """
         <div style="padding: 10px 0 16px 0; border-bottom: 1px solid #E2E8F0; margin-bottom: 14px;">
             <div style="font-size: 1.35rem; font-weight: 700; color: #0F172A; letter-spacing: -0.5px;">QueueWise</div>
-            <div style="font-size: 0.8rem; color: #0284C7; font-weight: 600;">Cluster Operations Console</div>
-            <div style="font-size: 0.74rem; color: #64748B; margin-top: 2px;">PySpark 3.5.9 | Streamlit 1.65.0</div>
+            <div style="font-size: 0.8rem; color: #0284C7; font-weight: 600;">Operations Intelligence Platform</div>
+            <div style="font-size: 0.74rem; color: #64748B; margin-top: 2px;">Queue Analytics &amp; Capacity Optimization</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -311,16 +314,19 @@ def main() -> None:
     )
 
     # Top Brand Header Bar
-    prov_badge = PROVENANCE_BADGES.get(selected_nav, "Analytical Stage")
+    prov_badge = PROVENANCE_BADGES.get(selected_nav, "Operational Analytics")
+    subtitle = PAGE_SUBTITLES.get(selected_nav, "Queue Analytics & Capacity Optimization")
+    page_heading = "Capacity Planning &amp; Optimization" if selected_nav == "Capacity Planning" else f"QueueWise &mdash; {selected_nav}"
+
     st.markdown(
         f"""
         <div class="app-brand-container">
             <div>
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 2px;">
-                    <h1 class="app-brand-title">QueueWise &mdash; {selected_nav}</h1>
+                    <h1 class="app-brand-title">{page_heading}</h1>
                     <span class="provenance-badge">{prov_badge}</span>
                 </div>
-                <p class="app-brand-subtitle">Multi-Counter Queue Analytics &amp; Decision Support System</p>
+                <p class="app-brand-subtitle">{subtitle}</p>
             </div>
             <div>
                 <span class="status-badge">
@@ -482,7 +488,7 @@ def main() -> None:
                         <span class="pill pill-blue">High Volume</span>
                         <div style="font-weight: 600; margin: 4px 0; color: #0F172A;">Admissions & Enrollment</div>
                         <div style="font-size: 0.82rem; color: #475569; line-height: 1.45;">
-                            Highest volume queue (<strong>154 students</strong>, 30.8% share). 
+                            Highest volume queue (<strong>154 customers</strong>, 30.8% share).
                             Average wait is 113.3 min with <strong>83.5% counter utilization</strong>.
                         </div>
                     </div>
@@ -504,7 +510,7 @@ def main() -> None:
         st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
         col_act1, col_act2 = st.columns([3, 1])
         with col_act1:
-            st.write("Evaluate reallocating underutilized COUNTER_07 to eliminate the Financial Aid bottleneck:")
+            st.write("Evaluate reallocating underutilized COUNTER_07 to reduce the Financial Aid bottleneck:")
         with col_act2:
             if st.button("⚡ Open Capacity Planning Scenario →", use_container_width=True):
                 st.session_state["nav_page"] = "Capacity Planning"
@@ -534,7 +540,7 @@ def main() -> None:
                 max_value=120,
                 value=30,
                 step=5,
-                help="Evaluate the percentage of students whose wait exceeded this duration.",
+                help="Evaluate the percentage of customers whose wait exceeded this duration.",
             )
 
         # Dynamic Threshold Evaluation via centralized data_loader
@@ -672,7 +678,7 @@ def main() -> None:
         table_df.columns = [
             "Queue ID",
             "Service Description",
-            "Students",
+            "Customers",
             "Avg Wait (min)",
             "Median Wait (min)",
             "Max Wait (min)",
@@ -681,15 +687,15 @@ def main() -> None:
         ]
         st.dataframe(table_df, use_container_width=True, hide_index=True)
 
-        # Spark MLlib Wait-Time Risk Prediction Section
+        # Machine Learning Predicted Long-Wait Risk Section
         if df_ml_risk is not None and not df_ml_risk.empty:
             st.markdown("<div style='height: 16px;'></div>", unsafe_allow_html=True)
             st.markdown(
                 """
                 <div class="content-box">
-                    <div class="content-header">Spark MLlib: Supervised Wait-Time Risk Prediction</div>
+                    <div class="content-header">Machine Learning: Predicted Long-Wait Risk</div>
                     <div style="font-size: 0.83rem; color: #475569; line-height: 1.45; margin-bottom: 12px;">
-                        PySpark MLlib supervised classification pipeline predicting whether an arriving student will breach the 30-minute wait threshold (&gt;1,800s).
+                        Supervised classification pipeline predicting whether an arriving customer will exceed the 30-minute waiting threshold (&gt;1,800s).
                         <strong>Zero-Leakage Design:</strong> Trained strictly on arrival-time observable features (Queue ID, Priority Level, Arrival Hour, Rush Hour Indicator, and 30-minute Rolling Prior Arrival Density). Downstream service durations and counter assignments are strictly excluded.
                     </div>
                 </div>
@@ -719,7 +725,7 @@ def main() -> None:
 
             if df_ml_metrics is not None and not df_ml_metrics.empty:
                 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
-                st.markdown("##### Spark MLlib Pipeline Model Comparison (Holdout Test Split)")
+                st.markdown("##### Predictive Model Comparison (Holdout Test Split)")
                 disp_ml = df_ml_metrics.copy()
                 disp_ml.columns = [
                     "Model",
@@ -740,7 +746,7 @@ def main() -> None:
                 st.markdown(
                     """
                     <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 10px 14px; font-size: 0.81rem; color: #475569; margin-top: 8px;">
-                        <strong>Audit Note & Synthetic Data Disclosure:</strong> The high AUC (~0.999&ndash;1.000) is an expected mathematical property of the synthetic discrete-event M/M/c queuing mechanics (Poisson arrivals, exponential service durations, and fixed FIFO counter queues) across 500 customers in a single simulated day. In this dataset, <code>Q_ID_GENERAL</code> has 0 breaches while <code>Q_FINANCIAL_AID</code> remains persistently saturated after 10:42 AM, creating clean decision boundaries. In contrast, real-world physical university help desks experience unmeasured human walk-in variance, non-stationary service complexity, and variable staff processing rates.
+                        <strong>Model Evaluation &amp; Synthetic Data Disclosure:</strong> The high AUC (~0.999&ndash;1.000) is an expected mathematical property of the synthetic discrete-event M/M/c queuing mechanics (Poisson arrivals, exponential service durations, and fixed FIFO counter queues) across 500 customers in a single simulated operating day. In this dataset, <code>Q_ID_GENERAL</code> has 0 breaches while <code>Q_FINANCIAL_AID</code> remains persistently saturated after 10:42 AM, creating clean decision boundaries. In contrast, live physical service facilities experience unmeasured human walk-in variance, non-stationary service complexity, and variable staff processing rates.
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -826,7 +832,7 @@ def main() -> None:
                             <li><strong>COUNTER_07 & COUNTER_08 (ID General):</strong> Substantially underutilized at <strong>31.8% and 28.8%</strong> (averaging 30.3%).</li>
                         </ul>
                         <div style="background-color: #FEF3C7; border-left: 3px solid #D97706; padding: 6px 10px; font-size: 0.77rem; color: #92400E;">
-                            <strong>Capacity Opportunity:</strong> One counter from ID General can be transferred to Financial Aid without compromising basic campus ID operations.
+                            <strong>Capacity Opportunity:</strong> One counter from ID General can be reallocated to Financial Aid without compromising basic campus ID operations.
                         </div>
                     </div>
                 </div>
@@ -849,7 +855,7 @@ def main() -> None:
         util_display.columns = [
             "Counter ID",
             "Assigned Queue",
-            "Students Served",
+            "Customers Served",
             "Busy Hours",
             "Avg Service (min)",
             "Baseline Utilization (%)",
@@ -863,14 +869,13 @@ def main() -> None:
         st.markdown(
             """
             <div class="content-box">
-                <div class="content-header">Dynamic Counter Reallocation Scenario Analysis</div>
+                <div class="content-header">Optimize Service Capacity and Reduce Customer Waiting Times</div>
                 <div style="font-size: 0.84rem; color: #334155; line-height: 1.45;">
-                    <strong>Tested Operational Hypothesis:</strong> Temporarily transfer <strong>COUNTER_07</strong> from 
-                    <strong>Q_ID_GENERAL</strong> (underutilized at 30.3%) to <strong>Q_FINANCIAL_AID</strong> (saturated at 97.4%).
+                    <strong>Scenario:</strong> Reallocate <strong>COUNTER_07</strong> from
+                    <strong>Q_ID_GENERAL</strong> (underutilized at 30.3% baseline) to <strong>Q_FINANCIAL_AID</strong> (saturated at 97.4% baseline).
                     <br>
                     <span style="color: #64748B; font-size: 0.8rem;">
-                        <strong>Methodology:</strong> Discrete-event FIFO re-simulation using exact historical arrival timestamps and service durations.
-                        Total facility service workload (<strong>204,658 seconds</strong>) is strictly conserved across all 8 counters. Unchanged queues retain identical schedules.
+                        <strong>Simulation Model:</strong> Evaluated using historical arrival timestamps and service durations under FIFO dispatching. Total facility service workload (<strong>204,658 seconds</strong>) is strictly conserved across all 8 counters. Unchanged queues maintain identical schedules.
                     </span>
                 </div>
             </div>
@@ -920,7 +925,7 @@ def main() -> None:
                     <div class="kpi-card" style="border-left: 4px solid #64748B;">
                         <div class="kpi-title">Workload Conservation</div>
                         <div class="kpi-number" style="color: #334155; font-size: 1.35rem;">204,658 s</div>
-                        <div class="kpi-detail kpi-success-text">Exactly Preserved (0% leak)</div>
+                        <div class="kpi-detail kpi-success-text">Redistributed (0% workload loss)</div>
                     </div>
                     """,
                     unsafe_allow_html=True,
@@ -968,23 +973,21 @@ def main() -> None:
                     """
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <div style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-left: 4px solid #16A34A; border-radius: 6px; padding: 10px 12px;">
-                            <div style="font-weight: 600; color: #166534; font-size: 0.85rem;">1. Financial Aid Bottleneck Relieved</div>
+                            <div style="font-weight: 600; color: #166534; font-size: 0.85rem;">1. Bottleneck Relieved</div>
                             <div style="font-size: 0.78rem; color: #15803D; margin-top: 2px;">
-                                Average wait dropped by <strong>87.5 min (-57.4%)</strong>, from 152.5m down to <strong>65.0m</strong>. 
-                                Maximum student delay reduced by 184.3 min (-54.1%).
+                                Adding a 3rd counter reduces Financial Aid average waiting time by <strong>87.5 min (-57.4%)</strong>, from 152.5m down to <strong>65.0m</strong>, and lowers maximum customer delay by 184.3 min (-54.1%).
                             </div>
                         </div>
                         <div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-left: 4px solid #D97706; border-radius: 6px; padding: 10px 12px;">
-                            <div style="font-weight: 600; color: #92400E; font-size: 0.85rem;">2. Transparent Trade-off at ID General</div>
+                            <div style="font-weight: 600; color: #92400E; font-size: 0.85rem;">2. Service Trade-Off</div>
                             <div style="font-size: 0.78rem; color: #B45309; margin-top: 2px;">
-                                Operating with 1 counter increased ID General average wait from <strong>1.7m to 51.0m</strong>. 
-                                Illustrates that capacity transfer redistributes queue delays rather than eliminating workload.
+                                Operating ID General with 1 counter increases its average waiting time from <strong>1.7m to 51.0m</strong>. Reallocation balances delays across departments rather than eliminating all waiting time.
                             </div>
                         </div>
                         <div style="background-color: #EFF6FF; border: 1px solid #BFDBFE; border-left: 4px solid #2563EB; border-radius: 6px; padding: 10px 12px;">
-                            <div style="font-weight: 600; color: #1E40AF; font-size: 0.85rem;">3. Facility Operating Overtime Reduced</div>
+                            <div style="font-weight: 600; color: #1E40AF; font-size: 0.85rem;">3. Operating Efficiency</div>
                             <div style="font-size: 0.78rem; color: #1D4ED8; margin-top: 2px;">
-                                Clearing Financial Aid faster allows the facility to finish all 500 students at <strong>17:50:53</strong> instead of <strong>19:21:56</strong> (1.5 hours earlier closing).
+                                Clearing high-demand Financial Aid requests faster enables the facility to complete all 500 customers at <strong>17:50:53</strong> instead of <strong>19:21:56</strong> (1.5 hours earlier closing).
                             </div>
                         </div>
                     </div>
@@ -1068,10 +1071,10 @@ def main() -> None:
         st.markdown(
             """
             <div class="content-box">
-                <div class="content-header">Analytical Output Inspector & Evidence Export</div>
+                <div class="content-header">Analytical Datasets &amp; Export Center</div>
                 <div style="font-size: 0.83rem; color: #475569;">
-                    Inspect and export pre-computed analytical datasets generated by Apache Spark (PySpark 3.5.9).
-                    All data reflects synthetic simulation records (<code>is_synthetic = TRUE</code>).
+                    Inspect and export analytical datasets produced by the QueueWise analytics pipeline.
+                    All records reflect synthetic simulation data (<code>is_synthetic = TRUE</code>).
                 </div>
             </div>
             """,
@@ -1079,21 +1082,21 @@ def main() -> None:
         )
 
         dataset_options = {
-            "queue_metrics": "Stage 2: Queue Performance & Turnaround Metrics (queue_metrics.csv)",
-            "counter_utilization": "Stage 2: Baseline Counter Utilization (counter_utilization.csv)",
-            "hourly_arrivals": "Stage 2: Hourly Customer Arrivals (hourly_arrivals.csv)",
-            "customer_counts": "Stage 2: Customer Counts & Demand Share (customer_counts_by_queue.csv)",
-            "event_counts": "Stage 2: Lifecycle Event Counts (event_counts.csv)",
-            "sla_breaches": "Stage 3: SLA Breach Intelligence (sla_breaches_by_queue.csv)",
-            "capacity_comparison": "Stage 3: Capacity & Bottleneck Matrix (capacity_comparison.csv)",
-            "reallocation_metrics": "Stage 3: Reallocation Simulation Impact (reallocation_simulation_metrics.csv)",
-            "reallocated_counters": "Stage 3: Reallocated Counter Utilization (reallocated_counter_utilization.csv)",
-            "ml_risk": "Stage 4 (Spark MLlib): Queue Long-Wait Risk Estimates (queue_long_wait_risk.csv)",
-            "ml_metrics": "Stage 4 (Spark MLlib): Model Evaluation & Performance Metrics (ml_model_metrics.csv)",
+            "queue_metrics": "Queue Performance & Turnaround Metrics (queue_metrics.csv)",
+            "counter_utilization": "Baseline Counter Utilization (counter_utilization.csv)",
+            "hourly_arrivals": "Hourly Customer Arrivals (hourly_arrivals.csv)",
+            "customer_counts": "Customer Counts & Demand Share (customer_counts_by_queue.csv)",
+            "event_counts": "Lifecycle Event Counts (event_counts.csv)",
+            "sla_breaches": "SLA Benchmark Performance (sla_breaches_by_queue.csv)",
+            "capacity_comparison": "Capacity & Bottleneck Matrix (capacity_comparison.csv)",
+            "reallocation_metrics": "Reallocation Simulation Impact (reallocation_simulation_metrics.csv)",
+            "reallocated_counters": "Reallocated Counter Utilization (reallocated_counter_utilization.csv)",
+            "ml_risk": "Machine Learning Long-Wait Risk Estimates (queue_long_wait_risk.csv)",
+            "ml_metrics": "Model Evaluation & Performance Metrics (ml_model_metrics.csv)",
         }
 
         if raw_df is not None:
-            dataset_options["raw_events"] = "Stage 1: Raw Queue Event Log (queue_events.csv - Preview)"
+            dataset_options["raw_events"] = "Service Lifecycle Event Log (queue_events.csv - Preview)"
 
         chosen_key = st.selectbox(
             "Select Analytical Dataset to Inspect:",
@@ -1129,39 +1132,36 @@ def main() -> None:
             else:
                 st.warning(f"Dataset `{chosen_key}.csv` is currently unavailable in `outputs/`.")
 
-    # Global Compact Disclaimer & Collapsible System Information
+    # Global Disclaimer & System Information
     st.markdown(
         """
         <div class="footer-disclaimer">
-            QueueWise uses synthetic discrete-event queuing data for INT315 Cluster Computing experiments. Results do not represent actual university operations.
+            This demonstration uses synthetic service events. Results illustrate analytical and simulated scenarios and do not represent live operational measurements.
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    with st.expander("System & Cluster Computing Architecture Details (INT315)", expanded=False):
+    with st.expander("System Information", expanded=False):
         c_env1, c_env2 = st.columns(2)
         with c_env1:
             st.markdown(
                 """
-                **Local Processing Environment:**
-                - **Processing Engine:** Apache Spark (PySpark 3.5.9)
-                - **Execution Mode:** Local standalone (`local[*]`, 16 logical CPU threads)
-                - **Shuffle Partitions:** 4 (`spark.sql.shuffle.partitions = 4`)
-                - **Cluster Topology:** Single-node local execution (Windows workstation, not a distributed multi-node cluster)
-                - **Runtime Environment:** Python 3.10.0 | Windows 10
-                - **Java Runtime:** OpenJDK 8 (Adoptium Temurin 1.8.0_482)
-                - **Hadoop Winutils:** `C:\\hadoop\\bin\\winutils.exe`
+                **Platform Architecture:**
+                - **Processing Framework:** Apache Spark distributed computing engine
+                - **Execution Architecture:** Local standalone pipeline execution
+                - **Data Validation:** 12-point integrity and concurrency validation
+                - **Analytical Modules:** Batch ingestion, discrete-event simulation, supervised MLlib classification
                 """
             )
         with c_env2:
             st.markdown(
                 """
-                **Cluster Analytics & Simulation Capabilities:**
-                - **Total Workload:** 204,658 seconds (56.85 counter-hours strictly conserved)
-                - **Machine Learning:** Spark MLlib Pipeline (`StringIndexer`, `OneHotEncoder`, `VectorAssembler`, `LogisticRegression`)
-                - **Streaming Processing:** Spark Structured Streaming (micro-batching with event-time watermarking)
-                - **Presentation Stack:** Streamlit 1.65.0 | Plotly 7.1.0 | pandas 2.3.3
+                **Operational Parameters:**
+                - **Simulation Workload:** 204,658 seconds (56.85 counter-hours strictly conserved across scenarios)
+                - **Operating Window:** 09:00 to 19:22 (4 service queues, 8 service counters)
+                - **SLA Benchmarks:** 15-minute, 30-minute, and 60-minute waiting thresholds
+                - **Predictive Risk Model:** Supervised arrival-time feature classification
                 """
             )
 
