@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QueueWise — Operations Intelligence Platform</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <!-- Plotly.js for responsive enterprise data visualization -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-wrapper">
+        <div class="brand-icon">Q</div>
+        <div class="brand-text">
+          <h1>QueueWise</h1>
+          <p>Operations Intelligence Platform &bull; Queue Analytics &amp; Capacity Optimization</p>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span>Synthetic Operational Model</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Bar -->
+  <nav class="nav-bar">
+    <div class="nav-inner">
+      <a href="/" class="nav-link active" data-page="overview">Overview</a>
+      <a href="/queue-performance" class="nav-link" data-page="queue-performance">Queue Performance</a>
+      <a href="/counter-utilization" class="nav-link" data-page="counter-utilization">Counter Utilization</a>
+      <a href="/capacity-planning" class="nav-link" data-page="capacity-planning">Capacity Planning</a>
+      <a href="/data-explorer" class="nav-link" data-page="data-explorer">Data Explorer</a>
+    </div>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="app-container">
+    <div class="page-intro">
+      <h2 class="page-title">Operational Health &amp; Queue Benchmarks</h2>
+      <p class="page-description">
+        Executive operational metrics, waiting-time SLA targets, arrival distribution, and facility capacity bottlenecks.
+      </p>
+    </div>
+
+    <!-- Dynamic Content Loaded via API -->
+    <div id="overview-content">
+      <div class="loading-wrapper">
+        <div class="spinner"></div>
+        <span>Loading executive metrics...</span>
+      </div>
+    </div>
+
+    <!-- Platform Architecture & Parameters Details -->
+    <details class="accordion-details">
+      <summary class="accordion-summary">&#9656; System Information &amp; Operational Architecture</summary>
+      <div class="accordion-body">
+        <div>
+          <strong>Platform Architecture:</strong>
+          <ul style="padding-left: 18px; margin-top: 4px;">
+            <li><strong>Processing Engine:</strong> Apache Spark distributed computing framework</li>
+            <li><strong>Execution Mode:</strong> Local standalone pipeline with Catalyst optimization</li>
+            <li><strong>Data Integrity:</strong> 12-point integrity and temporal concurrency validation</li>
+            <li><strong>Analytical Modules:</strong> Batch ingestion, discrete-event simulation, supervised MLlib classification</li>
+          </ul>
+        </div>
+        <div>
+          <strong>Operational Parameters:</strong>
+          <ul style="padding-left: 18px; margin-top: 4px;">
+            <li><strong>Total Workload:</strong> 204,658 seconds (56.85 counter-hours strictly conserved)</li>
+            <li><strong>Operating Window:</strong> 09:00 to 19:22 (4 service queues, 8 service counters)</li>
+            <li><strong>SLA Targets:</strong> 15-minute, 30-minute, and 60-minute wait thresholds</li>
+            <li><strong>Predictive Models:</strong> Spark MLlib supervised arrival-time classification</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="site-footer">
+    <div class="footer-disclaimer">
+      This demonstration uses synthetic service events. Results illustrate analytical and simulated scenarios and do not represent live operational measurements.
+    </div>
+    <div class="footer-meta">
+      QueueWise Operations Intelligence Platform &bull; Python Flask + Vanilla HTML/CSS/JS Architecture
+    </div>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/charts.js"></script>
+  <script src="/js/pages.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

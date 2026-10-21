@@ -10,5 +10,7 @@ pandas>=2.0.0
 # Future Stages: Real-Time Stream Processing, Analytics & Visualization
 # (Pre-installed in current environment)
 pyspark>=3.5.0
+# Full-Stack Web Application & REST API
+flask>=3.0.0
 streamlit>=1.30.0
 plotly>=5.18.0

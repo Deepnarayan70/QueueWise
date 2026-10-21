@@ -22,7 +22,7 @@ Operating under bursty arrival patterns, service desks often experience asymmetr
 2. **Machine Learning Risk Scoring (Spark MLlib):** Evaluates a leakage-free supervised classification pipeline that predicts critical SLA breach risk (>30-minute delay) at the exact moment of customer arrival.
 3. **Continuous Micro-Batch Ingestion (Spark Structured Streaming):** Ingests incremental micro-batches with event-time watermarking and windowed aggregations for real-time queue health monitoring.
 4. **Counter Reallocation Simulation (Capacity Planning):** Models dynamic resource reallocation via discrete FIFO event simulation, demonstrating how transferring a single underutilized counter eliminates 87.5 minutes of average wait time and closes the facility 1.5 hours earlier.
-5. **Interactive Executive Console (Streamlit & Plotly):** Delivers a five-page decision-support console with zero-exception headless testing and clean enterprise data exports.
+5. **Interactive Full-Stack Web Platform (Flask + HTML/CSS/JS + Plotly.js):** Delivers a responsive, lightweight, production-grade operations console powered by a Python Flask REST API and modular frontend architecture, with the Streamlit app preserved as a fallback.
 
 > **Academic & Transparency Notice:**  
 > All records analyzed by this platform are generated via a discrete-event queuing simulation (`is_synthetic = TRUE`, `data_source = SYNTHETIC_SIMULATION`, random seed 42). All dataset files, checksums, and analytical outputs reflect deterministic benchmark experiments.
@@ -93,6 +93,27 @@ flowchart TD
 
 ```text
 QueueWise/
+├── frontend/                             # HTML5, CSS3, and Vanilla JavaScript UI
+│   ├── index.html                        # Overview page
+│   ├── pages/                            # Navigation sub-pages
+│   │   ├── queue-performance.html        # Multi-queue filters, CDF curves, and ML predictions
+│   │   ├── counter-utilization.html      # Physical counter workloads and threshold guidelines
+│   │   ├── capacity-planning.html        # Discrete FIFO simulation & trade-off models
+│   │   └── data-explorer.html            # Analytical dataset catalog, previews, and CSV exports
+│   ├── css/
+│   │   └── styles.css                    # Responsive enterprise stylesheet
+│   └── js/
+│       ├── api.js                        # Asynchronous REST API fetch client
+│       ├── charts.js                     # Plotly.js chart rendering functions
+│       ├── pages.js                      # Dynamic page controllers & DOM binders
+│       └── app.js                        # App bootstrap & client router
+├── backend/                              # Python Flask REST API & services
+│   ├── app.py                            # Central application server & security configuration
+│   ├── routes/                           # Modular API & static view blueprints
+│   │   ├── api_routes.py                 # REST endpoints for KPIs, queues, counters, simulation, exports
+│   │   └── view_routes.py                # HTML5 page delivery routes
+│   └── services/                         # Analytical business logic & cached data loaders
+│       └── data_service.py               # Timestamp-aware analytical loader independent of Streamlit
 ├── data/                                 # Simulation input dataset
 │   └── queue_events.csv                  # 1,500 lifecycle events (MD5: 080a2b9a6c4c440644e92ac93f7a9262)
 ├── ml/                                   # Spark MLlib Machine Learning Pipeline
@@ -103,7 +124,7 @@ QueueWise/
 │   ├── queue_streaming_demo.py           # Micro-batch streaming pipeline with watermarking
 │   ├── input_stream/                     # Micro-batch streaming landing directory
 │   └── checkpoints/                      # Fault-tolerant streaming state checkpoint store
-├── outputs/                              # Analytical CSV outputs (consumed by dashboard)
+├── outputs/                              # Analytical CSV outputs (consumed by frontend & API)
 │   ├── event_counts.csv                  # Stage 2: Lifecycle event frequency
 │   ├── customer_counts_by_queue.csv      # Stage 2: Customer volume & queue market share
 │   ├── queue_metrics.csv                 # Stage 2: Average, median, max wait and turnaround times
@@ -116,12 +137,16 @@ QueueWise/
 │   ├── ml_model_metrics.csv              # Spark MLlib: Evaluation metrics (Accuracy, F1, AUC)
 │   ├── ml_model_summary.json             # Spark MLlib: JSON summary of hyperparameters & test split
 │   └── queue_long_wait_risk.csv          # Spark MLlib: Predicted long-wait risk (>30m) by queue
-├── screenshots/                          # Dashboard verification captures
+├── tests/                                # Automated unit & integration test suites
+│   ├── test_flask_api.py                 # Flask REST API endpoints & security tests
+│   ├── test_data_loader.py               # Data loading and KPI calculation tests
+│   └── test_dashboard.py                 # Streamlit fallback AppTest suite
+├── screenshots/                          # Verification captures
 ├── event_generator.py                    # Stage 1: Discrete event simulator (Seed 42)
 ├── validate_events.py                    # Stage 1: 12-point dataset schema and integrity validator
 ├── spark_processor.py                    # Stage 2: PySpark RDD, Spark SQL, and queue analytics engine
 ├── capacity_planner.py                   # Stage 3: PySpark SLA analytics and counter reallocation simulator
-├── dashboard.py                          # Stage 4: Interactive 5-tab Streamlit & Plotly console
+├── dashboard.py                          # Fallback: Interactive Streamlit console
 ├── requirements.txt                      # Project dependencies
 ├── .gitignore                            # Git exclusion rules
 └── README.md                             # Comprehensive technical manual
@@ -283,15 +308,39 @@ We evaluate transferring `COUNTER_07` from `Q_ID_GENERAL` to `Q_FINANCIAL_AID`. 
 
 ---
 
-## 9. Interactive Operations Dashboard (Streamlit & Plotly)
+## 9. Full-Stack Web Platform (Flask + HTML5 / CSS3 / Vanilla JS)
 
-The web dashboard (`dashboard.py`) features a responsive, light-themed operations console with sidebar-driven stateful navigation:
+QueueWise features a modern, responsive, production-ready web application built without heavy external frontend frameworks or Streamlit iframe wrappers:
 
-1. **Page 1: Overview:** Executive KPI summary cards (Total Customers Served, Facility Average Wait, 30-min SLA Breach Rate, Bottleneck Queue), rush-hour arrival curve, prioritized operational action directives, and a direct action link to the Capacity Planning console.
-2. **Page 2: Queue Performance:** Department multi-select filtering, custom wait threshold simulator (5-120 min), wait vs. service duration comparisons, cumulative wait distribution (CDF), and the **Spark MLlib Wait-Time Risk Scoring card & model comparison table**.
-3. **Page 3: Counter Utilization:** Color-coded physical counter workload distribution, saturation guidelines, and standardized vs. scenario operating window explanations.
-4. **Page 4: Capacity Planning:** Side-by-side reallocation scenario analysis, impact trade-off cards, comprehensive delta tables, and counter-level workload rebalancing.
-5. **Page 5: Data Explorer:** Interactive inspector and CSV exporter covering all 11 Spark analytical outputs, ML risk evaluations, model metrics, and raw event log previews.
+- **Frontend:** Pure HTML5 structure, modular CSS3 styling (`frontend/css/styles.css`), and vanilla JavaScript (`frontend/js/`) communicating asynchronously via the standard `fetch()` API.
+- **Charts & Visualization:** High-performance Plotly.js charts displaying real dynamic metrics fetched directly from backend endpoints.
+- **Backend:** Python Flask application serving both the HTML5 pages and a robust REST API from a single origin (`http://127.0.0.1:5000/`).
+- **Streamlit Fallback:** The legacy `dashboard.py` remains available as an alternative verification surface.
+
+### Application Navigation & Pages
+
+1. **Page 1: Overview (`/`):** Executive KPI summary cards (Total Customers Served, Facility Average Wait, 30-min SLA Breach Rate, Bottleneck Queue), 30-minute target SLA benchmark chart with shaded target zone, rush-hour arrival curve, prioritized operational action directives, and a direct link to the Capacity Planning console.
+2. **Page 2: Queue Performance (`/queue-performance`):** Interactive department multi-select filtering, custom wait threshold slider (10–120 min), wait vs. service duration comparisons, cumulative wait distribution (CDF curves), and **Spark MLlib Wait-Time Risk Scoring cards & holdout model comparison metrics**.
+3. **Page 3: Counter Utilization (`/counter-utilization`):** Physical counter workload distribution across all 8 counters with 75% target and 90% critical threshold guidelines, and standardized vs. scenario operating window explanations.
+4. **Page 4: Capacity Planning (`/capacity-planning`):** Side-by-side reallocation scenario analysis, 4 outcome KPI cards (FA wait reduction -87.5m, max wait reduction -184.3m, early facility close -1.5h, workload conservation 204,658s), trade-off callouts, and comprehensive comparison tables.
+5. **Page 5: Data Explorer (`/data-explorer`):** Interactive catalog, schema metadata badges, tabular previews, and direct CSV exports covering all analytical datasets and raw event logs.
+
+### REST API Reference
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/api/health` | `GET` | Service readiness, dataset integrity status, and workload verification. |
+| `/api/overview` | `GET` | Executive KPIs, horizontal benchmark chart data, hourly arrivals, and alerts. |
+| `/api/queues` | `GET` | List of active department queues, friendly labels, and brand color codes. |
+| `/api/queues/performance` | `GET` | Turnaround metrics, empirical wait CDF curves, threshold stats, and ML risks. Query params: `queues`, `threshold`. |
+| `/api/counters/utilization` | `GET` | Physical counter workloads, busy seconds, active hours, and baseline utilization. |
+| `/api/capacity/baseline` | `GET` | Baseline capacity allocation and performance matrix. |
+| `/api/capacity/scenario` | `GET` | Discrete-event FIFO reallocation scenario metrics, outcome cards, and trade-offs. |
+| `/api/datasets` | `GET` | Catalog of all available analytical datasets with record counts and descriptions. |
+| `/api/datasets/<name>` | `GET` | Tabular preview (columns and rows) for a specific dataset. Traversal-safe. |
+| `/api/datasets/<name>/download` | `GET` | Direct CSV file download attachment. Traversal-safe. |
+| `/api/ml/risk` | `GET` | Supervised machine learning long-wait breach predictions (>30m). |
+| `/api/ml/metrics` | `GET` | Machine learning model evaluation metrics across holdout test partitions. |
 
 ---
 
@@ -325,7 +374,7 @@ pip install -r requirements.txt
 # 1. Verify dataset integrity (12-point validation suite)
 python validate_events.py
 
-# 2. Run Spark Core & SQL analytics pipeline
+# 2. Run Spark Core & SQL analytics pipeline (when regenerating outputs)
 python spark_processor.py
 
 # 3. Run SLA breach detection and capacity re-simulation
@@ -337,10 +386,21 @@ python ml/queue_wait_prediction.py
 # 5. Run Spark Structured Streaming demonstration
 python streaming/queue_streaming_demo.py --mode demo
 
-# 6. Launch the Streamlit executive operations dashboard
+# 6. Execute full automated test suite (25 unit and integration tests)
+python -m unittest discover -s tests -v
+```
+
+### Step 4: Launch the Primary Full-Stack Web Application
+```powershell
+python backend/app.py
+```
+*Access the QueueWise platform at `http://127.0.0.1:5000/`.*
+
+### Step 5: (Optional Fallback) Launch the Streamlit Console
+```powershell
 streamlit run dashboard.py
 ```
-*Access the interactive web console at `http://localhost:8501`.*
+*Access the fallback Streamlit console at `http://localhost:8501/`.*
 
 ---
 
@@ -354,7 +414,9 @@ streamlit run dashboard.py
 | **Total Service Workload** | Workload conserved at 204,658 seconds | Exactly 204,658 seconds | PASS |
 | **Spark MLlib Pipeline** | Zero leakage; LogisticRegression AUC $\ge 0.95$ | AUC-ROC = 1.0000, F1 = 0.9865 | PASS |
 | **Structured Streaming** | Micro-batch watermarking & clean shutdown | 3 batches processed; 0 errors | PASS |
-| **Headless Dashboard AppTest** | `streamlit.testing.v1.AppTest` 0 exceptions | 0 exceptions raised | PASS |
+| **Flask REST API Test Suite** | 16 automated endpoint & security tests | 16 / 16 tests passed | PASS |
+| **Complete Unit Test Harness** | 25 automated tests in `tests/` | 25 / 25 tests passed | PASS |
+| **Streamlit Fallback AppTest** | `streamlit.testing.v1.AppTest` 0 exceptions | 0 exceptions raised | PASS |
 
 ---
 
