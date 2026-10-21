@@ -53,9 +53,9 @@ st.markdown(
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 0 16px 0;
+        padding: 10px 0 14px 0;
         border-bottom: 1px solid #E2E8F0;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
     .app-brand-title {
         font-size: 1.55rem;
@@ -70,13 +70,13 @@ st.markdown(
         margin: 2px 0 0 0;
     }
     .status-badge {
-        background-color: #FFFFFF;
+        background-color: #F8FAFC;
         border: 1px solid #CBD5E1;
         border-radius: 6px;
         padding: 5px 12px;
-        font-size: 0.8rem;
+        font-size: 0.76rem;
         font-weight: 500;
-        color: #334155;
+        color: #475569;
     }
 
     /* Operational KPI Metric Card */
@@ -87,6 +87,14 @@ st.markdown(
         padding: 14px 16px;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .kpi-card:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+        border-color: #CBD5E1;
     }
     .kpi-title {
         font-size: 0.74rem;
@@ -97,10 +105,13 @@ st.markdown(
         margin-bottom: 4px;
     }
     .kpi-number {
-        font-size: 1.65rem;
+        font-size: 1.6rem;
         font-weight: 700;
         color: #0F172A;
         line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     .kpi-detail {
         font-size: 0.78rem;
@@ -121,15 +132,15 @@ st.markdown(
         background-color: #FFFFFF;
         border: 1px solid #E2E8F0;
         border-radius: 8px;
-        padding: 16px 18px;
+        padding: 14px 16px;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-        margin-bottom: 16px;
+        margin-bottom: 14px;
     }
     .content-header {
-        font-size: 1.0rem;
+        font-size: 0.98rem;
         font-weight: 600;
         color: #1E293B;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     /* Status Pills */
@@ -145,6 +156,13 @@ st.markdown(
     .pill-green { background-color: #DCFCE7; color: #166534; }
     .pill-blue { background-color: #E0F2FE; color: #075985; }
 
+    /* Responsive Alert Grid */
+    .alert-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+    }
+
     /* Provenance Badge for Analytical Transparency */
     .provenance-badge {
         display: inline-block;
@@ -152,10 +170,10 @@ st.markdown(
         border: 1px solid #CBD5E1;
         border-radius: 4px;
         padding: 3px 8px;
-        font-size: 0.72rem;
+        font-size: 0.70rem;
         font-weight: 600;
         color: #475569;
-        letter-spacing: 0.3px;
+        letter-spacing: 0.4px;
         text-transform: uppercase;
         vertical-align: middle;
     }
@@ -167,7 +185,7 @@ st.markdown(
         text-align: center;
         padding: 20px 0 8px 0;
         border-top: 1px solid #E2E8F0;
-        margin-top: 28px;
+        margin-top: 24px;
     }
     </style>
     """,
@@ -196,7 +214,7 @@ PAGE_SUBTITLES = {
 
 def apply_clean_layout(
     fig: go.Figure,
-    height: int = 300,
+    height: int = 280,
     margin: Optional[Dict] = None,
     barmode: Optional[str] = None,
     xaxis_title: str = "",
@@ -206,16 +224,22 @@ def apply_clean_layout(
 ) -> go.Figure:
     """Applies a clean, restrained enterprise aesthetic to Plotly figures."""
     if margin is None:
-        margin = dict(l=35, r=20, t=20, b=35)
+        margin = dict(l=35, r=20, t=15, b=30)
 
     layout_update = dict(
-        font=dict(family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif", color="#334155"),
+        font=dict(family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif", color="#334155", size=12),
         paper_bgcolor="#FFFFFF",
         plot_bgcolor="#FFFFFF",
         margin=margin,
         height=height,
-        xaxis=dict(gridcolor="#F1F5F9", zerolinecolor="#CBD5E1", title=xaxis_title),
-        yaxis=dict(gridcolor="#F1F5F9", zerolinecolor="#CBD5E1", title=yaxis_title),
+        xaxis=dict(gridcolor="#F1F5F9", zerolinecolor="#CBD5E1", title=xaxis_title, automargin=True),
+        yaxis=dict(gridcolor="#F1F5F9", zerolinecolor="#CBD5E1", title=yaxis_title, automargin=True),
+        hoverlabel=dict(
+            bgcolor="#FFFFFF",
+            font_size=12,
+            font_family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif",
+            bordercolor="#CBD5E1",
+        ),
     )
     if barmode:
         layout_update["barmode"] = barmode
@@ -425,7 +449,13 @@ def main() -> None:
                     markers=True,
                     color_discrete_sequence=["#0284C7"],
                 )
-                apply_clean_layout(fig_arrivals, height=290, margin=dict(l=35, r=20, t=15, b=35))
+                fig_arrivals.update_traces(
+                    fillcolor="rgba(2, 132, 199, 0.10)",
+                    line=dict(color="#0284C7", width=2.5),
+                    marker=dict(size=6, color="#0284C7"),
+                    hovertemplate="Time: %{x}<br>Arrivals: %{y}<extra></extra>",
+                )
+                apply_clean_layout(fig_arrivals, height=270, margin=dict(l=35, r=20, t=10, b=30))
                 st.plotly_chart(fig_arrivals, use_container_width=True)
             else:
                 st.info("Hourly arrival dataset unavailable.")
@@ -443,29 +473,42 @@ def main() -> None:
             bar_colors = [QUEUE_COLORS.get(q, "#0284C7") for q in df_queue_sorted["queue_id"]]
 
             fig_wait_overview = go.Figure()
+            # Visual Target SLA Window (<30m)
+            fig_wait_overview.add_vrect(
+                x0=0,
+                x1=30,
+                fillcolor="#DCFCE7",
+                opacity=0.35,
+                line_width=0,
+                layer="below",
+            )
             fig_wait_overview.add_trace(
                 go.Bar(
                     y=[QUEUE_NAMES.get(q, q) for q in df_queue_sorted["queue_id"]],
                     x=df_queue_sorted["avg_wait_minutes"],
                     orientation="h",
                     marker_color=bar_colors,
-                    text=df_queue_sorted["avg_wait_minutes"].apply(lambda v: f"{v} min"),
+                    text=df_queue_sorted["avg_wait_minutes"].apply(lambda v: f"{v:.1f}m"),
                     textposition="auto",
+                    textfont=dict(size=12, color="#0F172A"),
+                    hovertemplate="%{y}<br>Average Wait: %{x:.1f} min<extra></extra>",
                 )
             )
             fig_wait_overview.add_vline(
                 x=30,
                 line_dash="dash",
                 line_color="#DC2626",
-                annotation_text="30m Target",
+                line_width=1.5,
+                annotation_text="30-min Target Limit",
                 annotation_position="bottom right",
+                annotation_font=dict(size=11, color="#DC2626"),
             )
             apply_clean_layout(
                 fig_wait_overview,
-                height=290,
+                height=270,
                 xaxis_title="Average Wait (Minutes)",
                 yaxis_title="",
-                margin=dict(l=10, r=20, t=15, b=35),
+                margin=dict(l=10, r=20, t=10, b=30),
             )
             st.plotly_chart(fig_wait_overview, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
@@ -475,7 +518,7 @@ def main() -> None:
             """
             <div class="content-box">
                 <div class="content-header">Prioritized Operational Status & Root Cause Diagnostics</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+                <div class="alert-grid">
                     <div style="border-left: 3px solid #DC2626; padding-left: 12px;">
                         <span class="pill pill-red">Critical Bottleneck</span>
                         <div style="font-weight: 600; margin: 4px 0; color: #0F172A;">Financial Aid & Scholarships</div>
@@ -530,8 +573,6 @@ def main() -> None:
                 default=queue_options,
                 format_func=lambda q: QUEUE_NAMES.get(q, q),
             )
-            if not selected_queues:
-                selected_queues = queue_options
 
         with f_col2:
             user_threshold_minutes = st.slider(
@@ -543,6 +584,10 @@ def main() -> None:
                 help="Evaluate the percentage of customers whose wait exceeded this duration.",
             )
 
+        if not selected_queues:
+            st.info("No service queues selected. Please choose one or more queues from the filter above.")
+            return
+
         # Dynamic Threshold Evaluation via centralized data_loader
         cust_total, cust_breached, custom_breach_rate, custom_info = compute_custom_threshold_metrics(
             raw_df, df_sla, selected_queues, user_threshold_minutes
@@ -552,12 +597,6 @@ def main() -> None:
         # Filtered DataFrame
         f_queue = df_queue[df_queue["queue_id"].isin(selected_queues)].copy()
         f_sla = df_sla[df_sla["queue_id"].isin(selected_queues)].copy()
-
-        if f_queue.empty:
-            st.info("No service queues match the selected filter. Displaying all queues by default.")
-            f_queue = df_queue.copy()
-            f_sla = df_sla.copy()
-            selected_queues = queue_options
 
         col_q1, col_q2 = st.columns([3, 2])
 
@@ -576,8 +615,9 @@ def main() -> None:
                     y=f_queue["avg_wait_minutes"],
                     name="Average Wait",
                     marker_color="#2563EB",
-                    text=f_queue["avg_wait_minutes"].apply(lambda v: f"{v}m"),
+                    text=f_queue["avg_wait_minutes"].apply(lambda v: f"{v:.1f}m"),
                     textposition="auto",
+                    hovertemplate="%{x}<br>Average Wait: %{y:.1f} min<extra></extra>",
                 )
             )
             fig_perf.add_trace(
@@ -586,8 +626,9 @@ def main() -> None:
                     y=f_queue["median_wait_minutes"],
                     name="Median Wait",
                     marker_color="#93C5FD",
-                    text=f_queue["median_wait_minutes"].apply(lambda v: f"{v}m"),
+                    text=f_queue["median_wait_minutes"].apply(lambda v: f"{v:.1f}m"),
                     textposition="auto",
+                    hovertemplate="%{x}<br>Median Wait: %{y:.1f} min<extra></extra>",
                 )
             )
             fig_perf.add_trace(
@@ -596,14 +637,15 @@ def main() -> None:
                     y=f_queue["avg_service_minutes"],
                     name="Average Service Duration",
                     marker_color="#10B981",
-                    text=f_queue["avg_service_minutes"].apply(lambda v: f"{v}m"),
+                    text=f_queue["avg_service_minutes"].apply(lambda v: f"{v:.1f}m"),
                     textposition="auto",
+                    hovertemplate="%{x}<br>Avg Service: %{y:.1f} min<extra></extra>",
                 )
             )
             apply_clean_layout(
                 fig_perf,
                 barmode="group",
-                height=320,
+                height=300,
                 xaxis_title="",
                 yaxis_title="Minutes",
                 legend_top=True,
@@ -637,12 +679,13 @@ def main() -> None:
                     x=user_threshold_minutes,
                     line_dash="dash",
                     line_color="#475569",
-                    annotation_text=f"{user_threshold_minutes}m threshold",
+                    annotation_text=f"{user_threshold_minutes}m benchmark",
                     annotation_position="top left",
+                    annotation_font=dict(size=11, color="#475569"),
                 )
                 apply_clean_layout(
                     fig_cdf,
-                    height=320,
+                    height=300,
                     margin=dict(l=35, r=20, t=25, b=35),
                     legend_top=True,
                 )
@@ -675,15 +718,21 @@ def main() -> None:
                 "avg_total_turnaround_minutes",
             ]
         ].copy()
+        table_df["avg_wait_minutes"] = table_df["avg_wait_minutes"].apply(lambda v: f"{v:.1f} min")
+        table_df["median_wait_minutes"] = table_df["median_wait_minutes"].apply(lambda v: f"{v:.1f} min")
+        table_df["max_wait_minutes"] = table_df["max_wait_minutes"].apply(lambda v: f"{v:.1f} min")
+        table_df["avg_service_minutes"] = table_df["avg_service_minutes"].apply(lambda v: f"{v:.1f} min")
+        table_df["avg_total_turnaround_minutes"] = table_df["avg_total_turnaround_minutes"].apply(lambda v: f"{v:.1f} min")
+        table_df["service_type"] = table_df["queue_id"].apply(lambda q: QUEUE_NAMES.get(q, q))
         table_df.columns = [
             "Queue ID",
-            "Service Description",
+            "Department Service",
             "Customers",
-            "Avg Wait (min)",
-            "Median Wait (min)",
-            "Max Wait (min)",
-            "Avg Service (min)",
-            "Turnaround (min)",
+            "Avg Wait",
+            "Median Wait",
+            "Max Wait",
+            "Avg Service",
+            "Turnaround",
         ]
         st.dataframe(table_df, use_container_width=True, hide_index=True)
 
@@ -715,9 +764,9 @@ def main() -> None:
                         st.markdown(
                             f"""
                             <div class="kpi-card" style="border-left: 4px solid {color};">
-                                <div class="kpi-title">{qname} Long-Wait Risk</div>
+                                <div class="kpi-title">{qname}</div>
                                 <div class="kpi-number" style="color: {color};">{risk_pct:.1f}%</div>
-                                <div class="kpi-detail">Predicted &gt;30m Breach Probability</div>
+                                <div class="kpi-detail"><span class="pill pill-blue">Predicted Risk</span> &gt;30m Breach Probability</div>
                             </div>
                             """,
                             unsafe_allow_html=True,
@@ -727,6 +776,9 @@ def main() -> None:
                 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
                 st.markdown("##### Predictive Model Comparison (Holdout Test Split)")
                 disp_ml = df_ml_metrics.copy()
+                for c in ["Accuracy (%)", "F1 Score", "Precision", "Recall", "AUC-ROC", "AUC-PR"]:
+                    if c in disp_ml.columns:
+                        disp_ml[c] = disp_ml[c].apply(lambda v: f"{v:.3f}" if isinstance(v, (int, float)) else str(v))
                 disp_ml.columns = [
                     "Model",
                     "Accuracy (%)",
@@ -790,8 +842,9 @@ def main() -> None:
                     x=df_util_sorted["counter_id"],
                     y=df_util_sorted["utilization_pct"],
                     marker_color=u_colors,
-                    text=df_util_sorted["utilization_pct"].apply(lambda v: f"{v}%"),
+                    text=df_util_sorted["utilization_pct"].apply(lambda v: f"{v:.1f}%"),
                     textposition="auto",
+                    hovertemplate="<b>%{x}</b><br>Utilization: %{y:.1f}%<extra></extra>",
                 )
             )
             fig_counter.add_hline(
@@ -800,6 +853,7 @@ def main() -> None:
                 line_color="#DC2626",
                 annotation_text="Critical Saturation (90%)",
                 annotation_position="top right",
+                annotation_font=dict(size=11, color="#DC2626"),
             )
             fig_counter.add_hline(
                 y=75.0,
@@ -807,10 +861,11 @@ def main() -> None:
                 line_color="#D97706",
                 annotation_text="Target Load Limit (75%)",
                 annotation_position="bottom right",
+                annotation_font=dict(size=11, color="#D97706"),
             )
             apply_clean_layout(
                 fig_counter,
-                height=320,
+                height=300,
                 xaxis_title="Physical Counter ID",
                 yaxis_title="Utilization (%)",
                 yaxis_range=[0, 110],
@@ -821,17 +876,17 @@ def main() -> None:
         with col_u_info:
             st.markdown(
                 """
-                <div class="content-box" style="min-height: 320px;">
+                <div class="content-box" style="min-height: 300px;">
                     <div class="content-header">Workload Distribution Analysis</div>
                     <div style="font-size: 0.83rem; color: #334155; line-height: 1.45;">
                         <p><strong>Severe Imbalance Across Department Counters:</strong></p>
                         <ul style="padding-left: 18px; margin: 0 0 10px 0;">
-                            <li><strong>COUNTER_03 & COUNTER_04 (Financial Aid):</strong> Critical saturation at <strong>98.9% and 96.0%</strong> utilization (averaging 97.4%). Zero idle buffer.</li>
-                            <li><strong>COUNTER_01 & COUNTER_02 (Admissions):</strong> Operating at <strong>83.2% and 83.8%</strong>, sustaining heavy volume.</li>
-                            <li><strong>COUNTER_05 & COUNTER_06 (Records):</strong> Healthy balanced utilization at <strong>63.5% and 62.6%</strong>.</li>
-                            <li><strong>COUNTER_07 & COUNTER_08 (ID General):</strong> Substantially underutilized at <strong>31.8% and 28.8%</strong> (averaging 30.3%).</li>
+                            <li><strong>COUNTER_03 &amp; COUNTER_04 (Financial Aid):</strong> Critical saturation at <strong>98.9% and 96.0%</strong> utilization (averaging 97.4%). Zero idle buffer.</li>
+                            <li><strong>COUNTER_01 &amp; COUNTER_02 (Admissions):</strong> Operating at <strong>83.2% and 83.8%</strong>, sustaining heavy volume.</li>
+                            <li><strong>COUNTER_05 &amp; COUNTER_06 (Records):</strong> Healthy balanced utilization at <strong>63.5% and 62.6%</strong>.</li>
+                            <li><strong>COUNTER_07 &amp; COUNTER_08 (ID General):</strong> Substantially underutilized at <strong>31.8% and 28.8%</strong> (averaging 30.3%).</li>
                         </ul>
-                        <div style="background-color: #FEF3C7; border-left: 3px solid #D97706; padding: 6px 10px; font-size: 0.77rem; color: #92400E;">
+                        <div style="background-color: #FEF3C7; border-left: 3px solid #D97706; padding: 6px 10px; font-size: 0.77rem; color: #92400E; border-radius: 4px;">
                             <strong>Capacity Opportunity:</strong> One counter from ID General can be reallocated to Financial Aid without compromising basic campus ID operations.
                         </div>
                     </div>
@@ -842,23 +897,30 @@ def main() -> None:
 
         # Counter Utilization Detail Table
         st.markdown("##### Physical Counter Workload Table")
-        util_display = df_util[
+        util_display = df_util.copy()
+        util_display["service_type"] = util_display["queue_id"].apply(lambda q: QUEUE_NAMES.get(q, q))
+        util_display["total_busy_hours"] = util_display["total_busy_hours"].apply(lambda v: f"{v:.2f} h")
+        util_display["avg_service_minutes"] = util_display["avg_service_minutes"].apply(lambda v: f"{v:.1f} m")
+        util_display["utilization_pct"] = util_display["utilization_pct"].apply(lambda v: f"{v:.1f}%")
+        util_display = util_display[
             [
                 "counter_id",
                 "queue_id",
+                "service_type",
                 "customers_served",
                 "total_busy_hours",
                 "avg_service_minutes",
                 "utilization_pct",
             ]
-        ].copy()
+        ]
         util_display.columns = [
             "Counter ID",
-            "Assigned Queue",
+            "Queue ID",
+            "Department Service",
             "Customers Served",
-            "Busy Hours",
-            "Avg Service (min)",
-            "Baseline Utilization (%)",
+            "Active Busy Time",
+            "Avg Service Duration",
+            "Baseline Utilization",
         ]
         st.dataframe(util_display, use_container_width=True, hide_index=True)
 
@@ -943,8 +1005,9 @@ def main() -> None:
                         y=df_realloc["base_avg_wait_minutes"],
                         name="Baseline (2 Counters)",
                         marker_color="#64748B",
-                        text=df_realloc["base_avg_wait_minutes"].apply(lambda v: f"{v}m"),
+                        text=df_realloc["base_avg_wait_minutes"].apply(lambda v: f"{v:.1f}m"),
                         textposition="auto",
+                        hovertemplate="<b>%{x}</b><br>Baseline Avg Wait: %{y:.1f} min<extra></extra>",
                     )
                 )
                 fig_realloc.add_trace(
@@ -953,14 +1016,15 @@ def main() -> None:
                         y=df_realloc["sim_avg_wait_minutes"],
                         name="Reallocated Scenario",
                         marker_color="#0284C7",
-                        text=df_realloc["sim_avg_wait_minutes"].apply(lambda v: f"{v}m"),
+                        text=df_realloc["sim_avg_wait_minutes"].apply(lambda v: f"{v:.1f}m"),
                         textposition="auto",
+                        hovertemplate="<b>%{x}</b><br>Reallocated Avg Wait: %{y:.1f} min<extra></extra>",
                     )
                 )
                 apply_clean_layout(
                     fig_realloc,
                     barmode="group",
-                    height=320,
+                    height=300,
                     xaxis_title="",
                     yaxis_title="Average Wait (Minutes)",
                     legend_top=True,
@@ -997,9 +1061,22 @@ def main() -> None:
 
             # Reallocation Comparison Table
             st.markdown("##### Baseline vs. Reallocated Scenario Comparison")
-            display_realloc = df_realloc[
+            display_realloc = df_realloc.copy()
+            display_realloc["service_name"] = display_realloc["queue_id"].apply(lambda q: QUEUE_NAMES.get(q, q))
+            display_realloc["base_avg_wait_minutes"] = display_realloc["base_avg_wait_minutes"].apply(lambda v: f"{v:.1f} min")
+            display_realloc["sim_avg_wait_minutes"] = display_realloc["sim_avg_wait_minutes"].apply(lambda v: f"{v:.1f} min")
+            display_realloc["wait_time_change_minutes"] = display_realloc["wait_time_change_minutes"].apply(lambda v: f"{v:+.1f} min")
+            display_realloc["wait_time_change_pct"] = display_realloc["wait_time_change_pct"].apply(lambda v: f"{v:+.1f}%")
+            display_realloc["base_max_wait_minutes"] = display_realloc["base_max_wait_minutes"].apply(lambda v: f"{v:.1f} min")
+            display_realloc["sim_max_wait_minutes"] = display_realloc["sim_max_wait_minutes"].apply(lambda v: f"{v:.1f} min")
+            display_realloc["base_breach_30m_pct"] = display_realloc["base_breach_30m_pct"].apply(lambda v: f"{v:.1f}%")
+            display_realloc["sim_breach_30m_pct"] = display_realloc["sim_breach_30m_pct"].apply(lambda v: f"{v:.1f}%")
+            display_realloc["base_breach_60m_pct"] = display_realloc["base_breach_60m_pct"].apply(lambda v: f"{v:.1f}%")
+            display_realloc["sim_breach_60m_pct"] = display_realloc["sim_breach_60m_pct"].apply(lambda v: f"{v:.1f}%")
+            display_realloc = display_realloc[
                 [
                     "queue_id",
+                    "service_name",
                     "counter_allocation_change",
                     "base_avg_wait_minutes",
                     "sim_avg_wait_minutes",
@@ -1012,20 +1089,21 @@ def main() -> None:
                     "base_breach_60m_pct",
                     "sim_breach_60m_pct",
                 ]
-            ].copy()
+            ]
             display_realloc.columns = [
                 "Queue ID",
+                "Department Service",
                 "Allocation Change",
                 "Base Avg Wait",
                 "Sim Avg Wait",
-                "Delta (min)",
+                "Wait Delta",
                 "Change (%)",
-                "Base Max",
-                "Sim Max",
-                "Base >30m (%)",
-                "Sim >30m (%)",
-                "Base >60m (%)",
-                "Sim >60m (%)",
+                "Base Max Wait",
+                "Sim Max Wait",
+                "Base >30m",
+                "Sim >30m",
+                "Base >60m",
+                "Sim >60m",
             ]
             st.dataframe(display_realloc, use_container_width=True, hide_index=True)
 
@@ -1044,21 +1122,28 @@ def main() -> None:
                     """,
                     unsafe_allow_html=True,
                 )
-                disp_rc = df_realloc_counters[
+                disp_rc = df_realloc_counters.copy()
+                disp_rc["service_name"] = disp_rc["reallocated_queue_id"].apply(lambda q: QUEUE_NAMES.get(q, q))
+                disp_rc["total_busy_hours"] = disp_rc["total_busy_hours"].apply(lambda v: f"{v:.2f} h")
+                disp_rc["standardized_utilization_pct"] = disp_rc["standardized_utilization_pct"].apply(lambda v: f"{v:.1f}%")
+                disp_rc["scenario_utilization_pct"] = disp_rc["scenario_utilization_pct"].apply(lambda v: f"{v:.1f}%")
+                disp_rc = disp_rc[
                     [
                         "counter_id",
                         "reallocated_queue_id",
+                        "service_name",
                         "customers_served",
                         "total_busy_hours",
                         "standardized_utilization_pct",
                         "scenario_utilization_pct",
                     ]
-                ].copy()
+                ]
                 disp_rc.columns = [
                     "Counter ID",
                     "Reallocated Queue",
+                    "Department Service",
                     "Customers Served",
-                    "Busy Hours",
+                    "Active Busy Time",
                     "Standardized Util (10.36h Window)",
                     "Scenario Util (8.85h Window)",
                 ]
@@ -1106,29 +1191,56 @@ def main() -> None:
 
         if chosen_key == "raw_events":
             preview_df = raw_df.head(100)
-            st.caption(f"Displaying first 100 of {len(raw_df)} raw synthetic lifecycle events.")
+            col_meta, col_btn = st.columns([3, 1])
+            with col_meta:
+                st.markdown(
+                    f"""
+                    <div style="display: flex; gap: 8px; align-items: center; margin: 4px 0 10px 0; flex-wrap: wrap;">
+                        <span class="provenance-badge">File: data/queue_events.csv</span>
+                        <span class="status-badge" style="padding: 2px 8px;">Displaying 100 of {len(raw_df)} Rows</span>
+                        <span class="status-badge" style="padding: 2px 8px;">{len(raw_df.columns)} Columns</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            with col_btn:
+                csv_bytes = raw_df.to_csv(index=False).encode("utf-8")
+                st.download_button(
+                    label="📥 Export Full CSV",
+                    data=csv_bytes,
+                    file_name="queue_events.csv",
+                    mime="text/csv",
+                    use_container_width=True,
+                )
             st.dataframe(preview_df, use_container_width=True, hide_index=True)
-            csv_bytes = raw_df.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label="📥 Download Full Raw Dataset (queue_events.csv)",
-                data=csv_bytes,
-                file_name="queue_events.csv",
-                mime="text/csv",
-            )
         else:
             chosen_df = datasets.get(chosen_key)
             if chosen_df is not None:
-                st.caption(
-                    f"Displaying **{len(chosen_df)} rows** and **{len(chosen_df.columns)} columns** from `outputs/{chosen_key}.csv`."
-                )
-                st.dataframe(chosen_df, use_container_width=True, hide_index=True)
-                csv_bytes = chosen_df.to_csv(index=False).encode("utf-8")
-                st.download_button(
-                    label=f"📥 Download {chosen_key}.csv",
-                    data=csv_bytes,
-                    file_name=f"{chosen_key}.csv",
-                    mime="text/csv",
-                )
+                if chosen_df.empty:
+                    st.info(f"Dataset `{chosen_key}.csv` contains no records.")
+                else:
+                    col_meta, col_btn = st.columns([3, 1])
+                    with col_meta:
+                        st.markdown(
+                            f"""
+                            <div style="display: flex; gap: 8px; align-items: center; margin: 4px 0 10px 0; flex-wrap: wrap;">
+                                <span class="provenance-badge">File: outputs/{chosen_key}.csv</span>
+                                <span class="status-badge" style="padding: 2px 8px;">{len(chosen_df)} Records</span>
+                                <span class="status-badge" style="padding: 2px 8px;">{len(chosen_df.columns)} Columns</span>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+                    with col_btn:
+                        csv_bytes = chosen_df.to_csv(index=False).encode("utf-8")
+                        st.download_button(
+                            label=f"📥 Export {chosen_key}.csv",
+                            data=csv_bytes,
+                            file_name=f"{chosen_key}.csv",
+                            mime="text/csv",
+                            use_container_width=True,
+                        )
+                    st.dataframe(chosen_df, use_container_width=True, hide_index=True)
             else:
                 st.warning(f"Dataset `{chosen_key}.csv` is currently unavailable in `outputs/`.")
 
